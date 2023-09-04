@@ -1,18 +1,16 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-
 from __future__ import print_function, unicode_literals
 
 DOCUMENTATION = """
----
 module: o4n_mongodb_init
 version_added: 1.0
 author: "Daiana Casas"
 short_description: Crea una coleccion en la base de datos y lo configura.
 description:
     - Se conecta al servidor MongoDB
-    - Dependiendo de la 'option' puede realizar distintas acciones sobre la base de datos especificada en la entrada. 
+    - Dependiendo de la 'option' puede realizar distintas acciones sobre la base de datos especificada en la entrada.
         -   crear un collection
         -   eliminar un collection
         -   eliminar todos los collections
@@ -20,30 +18,29 @@ description:
         -   ver todos los documentos de un collection
 options:
     hostname:
-        description: 
+        description:
             - host del servidor
         requiered: True
     port:
         description:
             - port del servidor
-        requiered: True            
+        requiered: True
     collectionname:
-        description: 
-            - nombre del collection de la base de datos. Pueden ser: 
-             "server" : invoca al servidor 
+        description:
+            - nombre del collection de la base de datos. Pueden ser:
+             "server" : invoca al servidor
              "name1" : nombre del collection
-             "xallx" : invoca a todos los collections 
+             "xallx" : invoca a todos los collections
         choices: ['server', <name>, 'xallx']
-        requiered: True            
+        requiered: True
     option:
         description:
             - Según su valor define la acción. Puede ser:
-                "status" : notifica la cantidad de documentos y sus contenidos 
-                "delete" : elimina el/los collections invocados, según el collectionname    
+                "status" : notifica la cantidad de documentos y sus contenidos
+                "delete" : elimina el/los collections invocados, según el collectionname
                 "create" : crea un collection con el nombre especificado en collecionname
         choices: ['status', 'delete', 'create']
         requiered: True
-
 """
 
 EXAMPLE = """
@@ -72,7 +69,7 @@ tasks:
         port: '27017'
         collectionname: 'new_collection'
         option: 'delete'
-      register: content  
+      register: content
 
 tasks:
     - name: Collection info from database test
@@ -81,11 +78,11 @@ tasks:
         port: '27017'
         collectionname: 'new_collection'
         option: 'status'
-      register: content    
+      register: content
 """
 
 RETURN = """
-msg: 
+msg:
     description: En todos los casos retorna un JSON. Segun la opcion:
     - Server status - databases + collections
 
@@ -147,7 +144,6 @@ msg:
         "failed": false,
         "msg": true
     }
-
 """
 
 from pymongo import MongoClient

@@ -1,9 +1,12 @@
-#!/usr/bin/python3.7
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals
 
+__metaclass__ = type
 
 DOCUMENTATION = """
+---
 module: o4n_mongodb_delete
 version_added: 1.0
 author: "Daiana Casas"
@@ -11,7 +14,6 @@ short_description: Elimina un/todos documentos en un collection y database deter
 description:
     - Se conecta al servidor MongoDB.
     - Según el dato de entrada va a buscarlo dentro de la collection y database especificada.
-    
 options:
     hostname:
         description: 
@@ -42,10 +44,9 @@ options:
         description:
             - ip,id,hostname device. This is not required on delete_with ='all' option.
         requiered: False
-
 """
 
-EXAMPLE = """
+EXAMPLES = """
 tasks:
     - name: Delete with ip config device
       o4n_mongodb_delete:

@@ -1,19 +1,17 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
 
 from __future__ import print_function, unicode_literals
 
-
 DOCUMENTATION = """
+---
 module: o4n_mongodb_search
 version_added: 1.0
 author: "Daiana Casas"
 short_description: Busca documentos en una collection y database determinada. 
 description:
-    - Se conecta a MongoDB
+    - Se conecta a MongoDB.
     - Busca un documento con la informacion que ingresa en la ipdevice.
-    
 options:
     hostname:
         description: 
@@ -44,7 +42,7 @@ options:
         requiered: True            
 """
 
-EXAMPLE = """
+EXAMPLES = """
 tasks:
     - name: Search objects in a Data Base by IP
       o4n_mongodb_search:
