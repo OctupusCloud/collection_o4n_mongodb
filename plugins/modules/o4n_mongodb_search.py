@@ -31,14 +31,18 @@ options:
         description:
             - nombre de la collection. Debe existir en la db.
         requiered: True
-    category:
+    user:
         description:
-            - nombre de la categoria de la informacion a guardar.
-        requiered: False
-        default: 'base'
-    device:
+            - Usuario para acceder a la db.
+        requiered: True
+    password:
         description:
-            - informacion a guardar.
+            - Contraseña para acceder a la db.
+        requiered: True
+    search:
+        description:
+            - Campo de búsqueda. Puede buscar por IP o por Hostname
+        type: dict
         requiered: True
 """
 
@@ -49,16 +53,22 @@ EXAMPLES = """
     port: '27017'
     dbname: 'dbase'
     collectionname: 'server'
-    search: '10.1.1.1'
+    user: "{{ansible_user}}"
+    password: "{{ansible_password}}"
+    search:
+      ip: '10.1.1.1'
   register: content
 
-- name: Search objects in a Data Base by username
+- name: Search objects in a Data Base by hostname
   o4n_mongodb_search:
     hostname: 'localhost'
     port: '27017'
     dbname: 'dbase'
     collectionname: 'server'
-    search: 'nepal'
+    user: "{{ansible_user}}"
+    password: "{{ansible_password}}"
+    search:
+      hostname: 'nepal'
   register: content
 """
 
@@ -84,6 +94,7 @@ msg:
 """
 
 from pymongo import MongoClient
+from pymongo.errors import OperationFailure
 from bson.json_util import dumps
 from collections import OrderedDict
 from ansible.module_utils.basic import AnsibleModule
@@ -121,22 +132,28 @@ if __name__ == "__main__":
 
     find = False
 
-# Conexion mongo db: se establece la conexion en la 1er operacion:
+    # Defino la conexión
+    client = MongoClient(
+        host=hostname,
+        port=port,
+        username=user,
+        password=password,
+        authSource=namedb,
+        # connect=False,
+        # tz_aware=False
+    )
+    
+# Pruebo la conexión:
     try:
         # client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
-        client = MongoClient(
-            host=hostname,
-            port=port,
-            username=user,
-            password=password,
-            authSource=namedb,
-            connect=False,
-            tz_aware=False
-        )
+        client.server_info()
         access_client = True
+    except OperationFailure as error:
+        mdb_msg=error
+        module.fail_json(msg="Error de Autenticación", content="Error de Autenticación. Revisar credenciales y nombre de la base de datos.")
     except Exception as error:
         mdb_msg = error
-        module.fail_json(msg=error, content="Sin conexion a mongo DB")
+        module.fail_json(msg="Error de Conexión", content="Sin conexión a mongo DB.")
 # Accedo al db y coleccion:
     if access_client:
         try:
@@ -155,12 +172,13 @@ if __name__ == "__main__":
             docObj = c.find_one({"ip": sip})
             fail = False
         except Exception as error:
+            mdb_msg = error
             fail = True
         # POR HOSTNAME:
         if fail:
             try:
-                shost = search["username"]
-                docObj = c.find_one({"username": shost})
+                shost = search["hostname"]
+                docObj = c.find_one({"hostname": shost})
                 docstr = dumps(docObj)
                 if docObj:
                     doc = json.loads(docstr)
@@ -168,7 +186,7 @@ if __name__ == "__main__":
                 else:
                     module.exit_json(status=True, find=False, sout=docObj)
             except Exception as error:
-                module.fail_json(msg="Search error", content=error, find=False)
+                module.fail_json(msg="Key word error", content="El key word no existe en el doc de MongoDB", find=False)
         else:
             if docObj:
                 docstr = dumps(docObj)

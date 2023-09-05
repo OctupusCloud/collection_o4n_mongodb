@@ -73,16 +73,6 @@ EXAMPLES = """
     data: "{{output.content.config}}"
   register: output
 
-- name: Update backup config device
-  mongodb_save:
-    hostname: 'localhost'
-    port: '27017'
-    collectionname: 'master'
-    status: 'upgrade'
-    hostdevice: "{{host_device}}"
-    ipdevice: "{{ip_device}}"
-    data: "{{output.content.config}}"
-
 - name: Update config device
   mongodb_save:
     hostname: 'localhost'
