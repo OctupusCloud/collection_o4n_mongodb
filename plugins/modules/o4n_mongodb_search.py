@@ -142,14 +142,14 @@ if __name__ == "__main__":
         # connect=False,
         # tz_aware=False
     )
-    
+
 # Pruebo la conexión:
     try:
         # client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
         client.server_info()
         access_client = True
     except OperationFailure as error:
-        mdb_msg=error
+        mdb_msg = error
         module.fail_json(msg="Error de Autenticación", content="Error de Autenticación. Revisar credenciales y nombre de la base de datos.")
     except Exception as error:
         mdb_msg = error
@@ -186,6 +186,7 @@ if __name__ == "__main__":
                 else:
                     module.exit_json(status=True, find=False, sout=docObj)
             except Exception as error:
+                mdb_msg = error
                 module.fail_json(msg="Key word error", content="El key word no existe en el doc de MongoDB", find=False)
         else:
             if docObj:
