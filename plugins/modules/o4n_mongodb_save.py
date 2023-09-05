@@ -1,7 +1,10 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function, unicode_literals
+
 DOCUMENTATION = """
+---
 module: mongodb_save
 version_added: 3.0
 author: "Daiana Casas"
@@ -12,7 +15,7 @@ description:
     - Actualiza un documento con la informacion que ingresa en el input.
     - Verifica la existencia del device con la ip ingresada.
     - Manejo de errores en caso de inputs incorrectos.
-    - v3:  agrego verificacion de existencias, actualizacion en ambas collections["master","lastversion"]
+    - v3  agrego verificacion de existencias, actualizacion en ambas collections["master","lastversion"]
 options:
     hostname:
         description: 
@@ -59,69 +62,68 @@ options:
         requiered: True
 """
 
-EXAMPLE = """
-tasks:
-    - name: Backup config device
-      mongodb_save:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'master'
-        hostdevice: "{{host_device}}"
-        ipdevice: "{{ip_device}}"
-        data: "{{output.content.config}}"
-      register: output
-tasks:
-    - name: Update backup config device
-      mongodb_save:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'master'
-        status: 'upgrade'
-        hostdevice: "{{host_device}}"
-        ipdevice: "{{ip_device}}"
-        data: "{{output.content.config}}"
-tasks:
-    - name: Update config device
-      mongodb_save:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'lastversion'
-        status: update
-        hostdevice: "{{host_device}}"
-        ipdevice: "{{ip_device}}"
-        data: "{{output2.content.config}}"
-      register: output
+EXAMPLES = """
+- name: Backup config device
+  mongodb_save:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'master'
+    hostdevice: "{{host_device}}"
+    ipdevice: "{{ip_device}}"
+    data: "{{output.content.config}}"
+  register: output
+
+- name: Update backup config device
+  mongodb_save:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'master'
+    status: 'upgrade'
+    hostdevice: "{{host_device}}"
+    ipdevice: "{{ip_device}}"
+    data: "{{output.content.config}}"
+
+- name: Update config device
+  mongodb_save:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'lastversion'
+    status: update
+    hostdevice: "{{host_device}}"
+    ipdevice: "{{ip_device}}"
+    data: "{{output2.content.config}}"
+  register: output
  
 """
 
 RETURN = """
-msg: 
-    description: En todos los casos retorna un JSON. Segun la opcion:
-    
-caso: actualizar device no existente
-    {
-            "info": "No se puede actualizar. No existe documento con el ip: 10.54.153.52",
-            "time": "Fri Mar 13 17:05:24 2020"
+case1:
+    description: actualizar device no existente
+    "msg": {
+        "info": "No se puede actualizar. No existe documento con el ip 10.54.153.52",
+        "time": "Fri Mar 13 17:05:24 2020"
         }
-caso: guardar device nuevo
-    {
+case2:
+    description: guardar device nuevo
+    "msg": {
             "category": "base",
             "info": "10.54.153.52-admin",
             "new_id": "5e6be7ea372efdf06aaf6513",
-            "time": "Fri Mar 13 17:07:06 2020"
+            "time": "Fri Mar 13 17:05:24 2020"
         }
-caso: actualizar device existente SIN especificar : status = "normal"
-    {
+case3:
+    description: actualizar device existente SIN especificar, status = "normal"
+    "msg": {
             "id": "{'$oid': '5e6be7ea372efdf06aaf6513'}",
-            "info": "Ya existe un documento con el ip: 10.54.153.52 ",
-            "time": "Fri Mar 13 17:08:14 2020"
+            "info": "Ya existe un documento con el ip 10.54.153.52",
+            "time": "Fri Mar 13 17:05:24 2020"
         }
-caso: actualizar device existente especificando: status = "update"
-    {
+case4:
+    description: actualizar device existente especificando, status = "update"
+    "msg": {
             "time": "Fri Mar 13 17:23:18 2020",
             "update": "master",
             "update_id": "{'$oid': '5e6be7ea372efdf06aaf6513'}"
-        
         }
 
 """

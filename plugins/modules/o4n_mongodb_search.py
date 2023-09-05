@@ -43,25 +43,23 @@ options:
 """
 
 EXAMPLES = """
-tasks:
-    - name: Search objects in a Data Base by IP
-      o4n_mongodb_search:
-        hostname: 'localhost'
-        port: '27017'
-        dbname: 'dbase'
-        collectionname: 'server'
-        search: '10.1.1.1'
-      register: content
+- name: Search objects in a Data Base by IP
+  o4n_mongodb_search:
+    hostname: 'localhost'
+    port: '27017'
+    dbname: 'dbase'
+    collectionname: 'server'
+    search: '10.1.1.1'
+  register: content
 
-tasks:
-    - name: Search objects in a Data Base by username
-      o4n_mongodb_search:
-        hostname: 'localhost'
-        port: '27017'
-        dbname: 'dbase'
-        collectionname: 'server'
-        search: 'nepal'
-      register: content
+- name: Search objects in a Data Base by username
+  o4n_mongodb_search:
+    hostname: 'localhost'
+    port: '27017'
+    dbname: 'dbase'
+    collectionname: 'server'
+    search: 'nepal'
+  register: content
 """
 
 RETURN = """

@@ -1,9 +1,10 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals
 
 DOCUMENTATION = """
+---
 module: o4n_mongodb_init
 version_added: 1.0
 author: "Daiana Casas"
@@ -11,11 +12,11 @@ short_description: Crea una coleccion en la base de datos y lo configura.
 description:
     - Se conecta al servidor MongoDB
     - Dependiendo de la 'option' puede realizar distintas acciones sobre la base de datos especificada en la entrada.
-        -   crear un collection
-        -   eliminar un collection
-        -   eliminar todos los collections
-        -   ver todas las bases de datos con sus respectivos collections del servidor
-        -   ver todos los documentos de un collection
+        - crear un collection
+        - eliminar un collection
+        - eliminar todos los collections
+        - ver todas las bases de datos con sus respectivos collections del servidor
+        - ver todos los documentos de un collection
 options:
     hostname:
         description:
@@ -27,65 +28,59 @@ options:
         requiered: True
     collectionname:
         description:
-            - nombre del collection de la base de datos. Pueden ser:
-             "server" : invoca al servidor
-             "name1" : nombre del collection
-             "xallx" : invoca a todos los collections
+            - nombre del collection de la base de datos.
+            - server, invoca al servidor.
+            - name1, nombre del collection.
+            - xallx, invoca a todos los collections.
         choices: ['server', <name>, 'xallx']
         requiered: True
     option:
         description:
-            - Según su valor define la acción. Puede ser:
-                "status" : notifica la cantidad de documentos y sus contenidos
-                "delete" : elimina el/los collections invocados, según el collectionname
-                "create" : crea un collection con el nombre especificado en collecionname
+            - Según su valor define la acción. Puede ser.
+            - status, notifica la cantidad de documentos y sus contenidos 
+            - delete, elimina el/los collections invocados, según el collectionname    
+            - create, crea un collection con el nombre especificado en collecionname
         choices: ['status', 'delete', 'create']
         requiered: True
 """
 
-EXAMPLE = """
-tasks:
-    - name: Server status - databases + collections
-      o4n_mongodb_init:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'server'
-        option: 'status'
-      register: content
+EXAMPLES = """
+- name: Server status - databases + collections
+  o4n_mongodb_init:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'server'
+    option: 'status'
+  register: content
 
-tasks:
-    - name: Create a collection on database test
-      o4n_mongodb_init:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'new_collection'
-        option: 'create'
-      register: content
+- name: Create a collection on database test
+  o4n_mongodb_init:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'new_collection'
+    option: 'create'
+  register: content
 
-tasks:
-    - name: Delete a collection on database test
-      o4n_mongodb_init:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'new_collection'
-        option: 'delete'
-      register: content
+- name: Delete a collection on database test
+  o4n_mongodb_init:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'new_collection'
+    option: 'delete'
+  register: content
 
-tasks:
-    - name: Collection info from database test
-      o4n_mongodb_init:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'new_collection'
-        option: 'status'
-      register: content
+- name: Collection info from database test
+  o4n_mongodb_init:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'new_collection'
+    option: 'status'
+  register: content
 """
 
 RETURN = """
-msg:
-    description: En todos los casos retorna un JSON. Segun la opcion:
-    - Server status - databases + collections
-
+case1:
+    description: Server status - databases + collections
     "msg": {
         "content": {
             "msg": {
@@ -107,8 +102,8 @@ msg:
         "failed": false,
         "msg": true
     }
-    - Create a collection 'col2' on database test
-
+case2:
+    description: Create a collection 'col2' on database test
     "msg": {
             "changed": false,
             "content": {
@@ -118,8 +113,8 @@ msg:
             "failed": false,
             "msg": true
         }
-    - Delete a collection 'col2' on database test
-
+case3:
+    description: Delete a collection 'col2' on database test
     "msg": {
         "changed": false,
         "content": {
@@ -129,8 +124,8 @@ msg:
         "failed": false,
         "msg": true
     }
-    - Collection info 'col1' from database test
-
+case4:
+    description: Collection info 'col1' from database test
     "msg": {
         "changed": false,
         "content": {

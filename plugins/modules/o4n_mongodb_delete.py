@@ -3,8 +3,6 @@
 
 from __future__ import print_function, unicode_literals
 
-__metaclass__ = type
-
 DOCUMENTATION = """
 ---
 module: o4n_mongodb_delete
@@ -16,7 +14,7 @@ description:
     - Según el dato de entrada va a buscarlo dentro de la collection y database especificada.
 options:
     hostname:
-        description: 
+        description:
             - host del servidor
         requiered: True
     port:
@@ -30,7 +28,7 @@ options:
         requiered: False
         default: 'test'    
     collectionname:
-        description: 
+        description:
             - nombre de la collection. Debe existir en la db.
         requiered: True 
         default: 'lastversion'
@@ -47,56 +45,54 @@ options:
 """
 
 EXAMPLES = """
-tasks:
-    - name: Delete with ip config device
-      o4n_mongodb_delete:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'master'
-        delete_with: 'ip'
-        delete_this: "{{ip_device}}"
-      register: output
-tasks:
-    - name: Delete with document's id 
-      o4n_mongodb_delete:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'master'
-        delete_with: 'id'
-        delete_this: "{{id_device}}"
-tasks:
-    - name: Delete with hostname device
-      mongodb_save:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'lastversion'
-        delete_with: 'hostname'
-        delete_this: "{{host_device}}"
-      register: output
-tasks:
-    - name: Delete all documents on 'lastversion' collection.
-      mongodb_save:
-        hostname: 'localhost'
-        port: '27017'
-        collectionname: 'lastversion'
-        delete_with: 'all'
-      register: output
+- name: Delete with ip config device
+  o4n_mongodb_delete:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'master'
+    delete_with: 'ip'
+    delete_this: "{{ip_device}}"
+  register: output
+
+- name: Delete with document's id 
+  o4n_mongodb_delete:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'master'
+    delete_with: 'id'
+    delete_this: "{{id_device}}"
+
+- name: Delete with hostname device
+  mongodb_save:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'lastversion'
+    delete_with: 'hostname'
+    delete_this: "{{host_device}}"
+  register: output
+
+- name: Delete all documents on 'lastversion' collection.
+  mongodb_save:
+    hostname: 'localhost'
+    port: '27017'
+    collectionname: 'lastversion'
+    delete_with: 'all'
+  register: output
 """
 
 RETURN = """
-msg: 
-    description: En todos los casos retorna un JSON
-    -  Delete with id/ip/hostname device
-    
+case1: 
+    description: Delete with id/ip/hostname device
     "content": {
-            "deleted": {
-                "_id": {
-                    "$oid": "5e9f415a11ae7508ca552dbc"
-                },
-                "testlast": 4.0
-            }
+        "deleted": {
+            "_id": {
+                "$oid": "5e9f415a11ae7508ca552dbc"
+            },
+            "testlast": 4.0
         }
-    -  Delete all documents on TestCollection
+    }
+case2:
+    description: Delete all documents on TestCollection
     "content": {
             "deleted": "all documents of TestCollection"
         }
