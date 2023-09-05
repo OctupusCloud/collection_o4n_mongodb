@@ -8,7 +8,7 @@ DOCUMENTATION = """
 module: mongodb_save
 version_added: 3.0
 author: "Daiana Casas"
-short_description: Guarda y/o actualiza documentos en una collection y database determinada.  
+short_description: Guarda y/o actualiza documentos en una collection y database determinada.
 description:
     - Se conecta a MongoDB.
     - Genera un documento con la informacion que ingresa en el input.
@@ -18,41 +18,41 @@ description:
     - v3  agrego verificacion de existencias, actualizacion en ambas collections["master","lastversion"]
 options:
     hostname:
-        description: 
+        description:
             - host del servidor
         requiered: True
     port:
         description:
             - port del servidor
-        requiered: True  
+        requiered: True
         type: int
     dbname:
         description:
             - database name
         requiered: False
-        default: 'test'    
+        default: 'test'
     collectionname:
-        description: 
+        description:
             - nombre de la collection. Debe existir en la db.
-        requiered: True 
+        requiered: True
         default: 'lastversion'
-        choices: ['lastversion','master']      
+        choices: ['lastversion','master']
     status:
         description:
             - permite la actualizacion del documento perteneciente al equipo.
         requiered: False
         default: 'normal'
-        choices: ['normal','update']     
+        choices: ['normal','update']
     category:
         description:
             - nombre de la categoria de la informacion a guardar.
         requiered: False
         default: 'base'
-    hostdevice: 
+    hostdevice:
         description:
             - device's hostname
         requiered: True
-    ipdevice: 
+    ipdevice:
         description:
             - ip device
         requiered: True
@@ -93,7 +93,6 @@ EXAMPLES = """
     ipdevice: "{{ip_device}}"
     data: "{{output2.content.config}}"
   register: output
- 
 """
 
 RETURN = """
@@ -130,9 +129,10 @@ case4:
 
 import time
 from collections import OrderedDict
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 from bson.json_util import dumps
 from pymongo import MongoClient
+import json
 
 if __name__ == "__main__":
 
@@ -142,9 +142,9 @@ if __name__ == "__main__":
             port=dict(requiered=True, type='int'),
             dbname=dict(requiered=False, default="test"),
             user=dict(requiered=False, default="admin"),
-            password=dict(requiered=False,no_log=True),
-            collectionname=dict(requiered=True, default="lastversion", choices=["master","lastversion"]),
-            status=dict(requiered=False, default="normal", choices=["normal","update"]),
+            password=dict(requiered=False, no_log=True),
+            collectionname=dict(requiered=True, default="lastversion", choices=["master", "lastversion"]),
+            status=dict(requiered=False, default="normal", choices=["normal", "update"]),
             category=dict(requiered=False, default="base", choices=["base"]),
             hostdevice=dict(required=True),
             ipdevice=dict(required=True),
@@ -159,11 +159,11 @@ if __name__ == "__main__":
     collectionname = module.params.get("collectionname")
     status = module.params.get("status")
     category = module.params.get("category")
-    input = module.params.get('data') # --> string with '
+    input = module.params.get('data')  # --> string with '
     new_data = OrderedDict()
     output = OrderedDict()
 
-## Manipulo los datos para guardar en Mongo:
+# Manipulo los datos para guardar en Mongo:
     try:
         new_data["hostname"] = module.params.get("hostdevice")
         new_data["ip"] = module.params.get("ipdevice")
@@ -174,31 +174,31 @@ if __name__ == "__main__":
     except Exception as error:
         msg = str(error)
         module.fail_json(msg=msg, content="No se puede guardar el input")
-## Conexion mongo db: se establece la conexion en la 1er operacion:
+# Conexion mongo db: se establece la conexion en la 1er operacion:
     try:
-## Conexion mongo db: se establece la conexion en la 1er operacion:
-        #client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
+        # Conexion mongo db: se establece la conexion en la 1er operacion:
+        # client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
         client = MongoClient(
-            host=hostname, 
-            port=port, 
+            host=hostname,
+            port=port,
             username=user,
-            password = password,
+            password=password,
             authSource=namedb,
-            connect=False, 
+            connect=False,
             tz_aware=False
         )
         access_client = True
     except Exception as error:
         msg = str(error)
         module.fail_json(msg=msg, content="Sin conexion con mongo DB")
-## Si es master collection:
+# Si es master collection:
     if access_client:
-## Acceso a la coleccion "test" de la DB (si no existe ne Mongo, la crea): 'test'
+        # Acceso a la coleccion "test" de la DB (si no existe ne Mongo, la crea): 'test'
         try:
             db = client[namedb]
             c = db[collectionname]
-## Si existe ese documento:
-        ##  POR IP:
+# Si existe ese documento:
+# POR IP:
             docObj = c.find_one({"ip": new_data["ip"]})
             docstr = dumps(docObj)
             doc = json.loads(docstr)
@@ -207,25 +207,25 @@ if __name__ == "__main__":
             fail = True
             msg = "Error-> " + str(error)
         if not fail:
-    ## Intento acceder al id, si exite uno:
+            # Intento acceder al id, si exite uno:
             try:
                 doc_id = str(doc["_id"])
-    ## Actualizo el documento, ya sea en master o lastversion:
+                # Actualizo el documento, ya sea en master o lastversion:
                 if "update" in status.lower():
                     c.update_one(filter={'ip': new_data["ip"]}, update={'$set': {'source': new_data["source"], 'time': time.asctime(time.localtime())}})
                     output["update_id"] = doc_id
                     output["update"] = collectionname
 
-    ## No puedo crear un nuevo doc con el mismo ip, ya sea en master o lastversion:
+                # No puedo crear un nuevo doc con el mismo ip, ya sea en master o lastversion:
                 else:
                     output["id"] = doc_id
                     output["update"] = collectionname
                     output["info"] = "Ya existe un documento con el ip: {} ".format(new_data["ip"])
-    ## Si no existe ese ip,
+            # Si no existe ese ip,
             except Exception as error:
                 e = "{}".format(error)
                 if "'NoneType' object is not subscriptable" in e:
-    ## e intento actualizar: error
+                    # e intento actualizar: error
                     if "update" in status.lower():
                         output["info"] = "No se puede actualizar. No existe documento con el ip: {}".format(new_data["ip"])
                     else:

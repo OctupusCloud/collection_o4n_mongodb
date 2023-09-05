@@ -8,7 +8,7 @@ DOCUMENTATION = """
 module: o4n_mongodb_delete
 version_added: 1.0
 author: "Daiana Casas"
-short_description: Elimina un/todos documentos en un collection y database determinada.  
+short_description: Elimina un/todos documentos en un collection y database determinada.
 description:
     - Se conecta al servidor MongoDB.
     - Según el dato de entrada va a buscarlo dentro de la collection y database especificada.
@@ -20,20 +20,20 @@ options:
     port:
         description:
             - port del servidor
-        requiered: True  
+        requiered: True
         type: int
     dbname:
         description:
             - database name
         requiered: False
-        default: 'test'    
+        default: 'test'
     collectionname:
         description:
             - nombre de la collection. Debe existir en la db.
-        requiered: True 
+        requiered: True
         default: 'lastversion'
-        choices: ['lastversion','master']      
-    delete_with: 
+        choices: ['lastversion','master']
+    delete_with:
         description:
             - type of data information device to search and eliminate.
         requiered: True
@@ -54,7 +54,7 @@ EXAMPLES = """
     delete_this: "{{ip_device}}"
   register: output
 
-- name: Delete with document's id 
+- name: Delete with document's id
   o4n_mongodb_delete:
     hostname: 'localhost'
     port: '27017'
@@ -81,7 +81,7 @@ EXAMPLES = """
 """
 
 RETURN = """
-case1: 
+case1:
     description: Delete with id/ip/hostname device
     "content": {
         "deleted": {
@@ -99,10 +99,10 @@ case2:
 """
 
 from pymongo import MongoClient
-from bson.json_util import loads,dumps
+from bson.json_util import dumps
 from bson.objectid import ObjectId
 from collections import OrderedDict
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 import json
 
 if __name__ == "__main__":
@@ -113,9 +113,9 @@ if __name__ == "__main__":
             port=dict(requiered=True),
             dbname=dict(requiered=True),
             user=dict(requiered=False, default="admin"),
-            password=dict(requiered=False,no_log=True),
+            password=dict(requiered=False, no_log=True),
             collectionname=dict(requiered=True),
-            delete_with=dict(requiered=True,default="id",choices=["ip","id","hostname","all"]),
+            delete_with=dict(requiered=True, default="id", choices=["ip", "id", "hostname", "all"]),
             delete_this=dict(requiered=False),
         )
     )
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     user = module.params.get("user")
     password = module.params.get("password")
     collectionname = module.params.get("collectionname")
-    option = module.params.get("delete_with")# --> string with '
+    option = module.params.get("delete_with")  # --> string with '
     value = module.params.get("delete_this")
     delete_out = OrderedDict()
 
@@ -133,31 +133,31 @@ if __name__ == "__main__":
     if option != "all":
         if not len(value):
             msg = "Error MongoDb"
-            module.fail_json(msg=msg, content="ERROR: no hay informacion para realizar la eliminacion. Ver 'delete_this': empty")            
+            module.fail_json(msg=msg, content="ERROR: no hay informacion para realizar la eliminacion. Ver 'delete_this': empty")
 
-## Conexion mongo db: se establece la conexion en la 1er operacion:
+# Conexion mongo db: se establece la conexion en la 1er operacion:
     try:
-        #client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
+        # client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
         client = MongoClient(
-            host=hostname, 
-            port=port, 
+            host=hostname,
+            port=port,
             username=user,
-            password = password,
+            password=password,
             authSource=namedb,
-            connect=False, 
+            connect=False,
             tz_aware=False
         )
         access_client = True
     except Exception as error:
         msg = str(error)
         module.fail_json(msg=msg, content="Sin conexion con mongo DB")
-## Accedo a la database y collection correspondientes
+# Accedo a la database y collection correspondientes
     if access_client:
         try:
             db = client[namedb]
             c = db[collectionname]
-            
-## Procedo a la eliminacion del doc:
+
+# Procedo a la eliminacion del doc:
             if option == "ip":
                 docObj = c.find_one_and_delete({"ip": value})
             elif option == "id":
@@ -171,16 +171,16 @@ if __name__ == "__main__":
                 out = {"deleted": "all documents of " + collectionname}
             else:
                 docstr = dumps(docObj)
-                doc=json.loads(docstr)
-                if isinstance(doc,dict):
-                    out = {"deleted": doc }
-                else: 
-                    msg = "Error-> Document on Collection doesn't exist" 
-                    module.fail_json(msg=msg, content="No se encuentra el doc {} :{}".format(option,value))
+                doc = json.loads(docstr)
+                if isinstance(doc, dict):
+                    out = {"deleted": doc}
+                else:
+                    msg = "Error-> Document on Collection doesn't exist"
+                    module.fail_json(msg=msg, content="No se encuentra el doc {} :{}".format(option, value))
             fail = False
         except Exception as error:
             fail = True
             msg = "Error-> " + str(error)
-            module.fail_json(msg=msg, content="Error en la busqueda del doc {} :{}".format(option,value))
+            module.fail_json(msg=msg, content="Error en la busqueda del doc {} :{}".format(option, value))
     if not fail:
         module.exit_json(status=True, content=out)

@@ -37,8 +37,8 @@ options:
     option:
         description:
             - Según su valor define la acción. Puede ser.
-            - status, notifica la cantidad de documentos y sus contenidos 
-            - delete, elimina el/los collections invocados, según el collectionname    
+            - status, notifica la cantidad de documentos y sus contenidos
+            - delete, elimina el/los collections invocados, según el collectionname
             - create, crea un collection con el nombre especificado en collecionname
         choices: ['status', 'delete', 'create']
         requiered: True
@@ -142,12 +142,10 @@ case4:
 """
 
 from pymongo import MongoClient
-from collections import OrderedDict
-from ansible.module_utils.basic import *
-from bson.json_util import loads,dumps
+from ansible.module_utils.basic import AnsibleModule
+from bson.json_util import dumps
 from bson.codec_options import CodecOptions
-from bson.objectid import ObjectId
-
+import json
 
 if __name__ == "__main__":
 
@@ -157,7 +155,7 @@ if __name__ == "__main__":
             port=dict(requiered=True, type='int'),
             dbname=dict(requiered=False, default='devices'),
             user=dict(requiered=False, default="admin"),
-            password=dict(requiered=False,no_log=True),
+            password=dict(requiered=False, no_log=True),
             collectionname=dict(requiered=True, default='lastversion'),
             option=dict(requiered=True),
         )
@@ -174,15 +172,15 @@ if __name__ == "__main__":
     access_client = False
     access_db = False
     try:
-## Conexion mongo db: se establece la conexion en la 1er operacion:
-        #client = MongoClient(host=hostname,port=port, connect=False,tz_aware=False)
+        # Conexion mongo db: se establece la conexion en la 1er operacion:
+        # client = MongoClient(host=hostname,port=port, connect=False,tz_aware=False)
         client = MongoClient(
-            host=hostname, 
-            port=port, 
+            host=hostname,
+            port=port,
             username=user,
-            password = password,
+            password=password,
             authSource=namedb,
-            connect=False, 
+            connect=False,
             tz_aware=False
         )
         access_client = True
@@ -190,7 +188,7 @@ if __name__ == "__main__":
         mdb_msg = error
         module.fail_json(msg=error, content="Sin conexion a mongo DB")
     if access_client:
-## Accedo a la base de datos:
+        # Accedo a la base de datos:
         try:
             db = client[namedb]
             access_db = True
@@ -200,7 +198,7 @@ if __name__ == "__main__":
         if access_db:
             flag = True
             if "create" in option:
-## Creacion de la coleccion de documentos:
+                # Creacion de la coleccion de documentos:
                 try:
                     db.create_collection(name=collection_name)
                     mdb_msg = "Creacion de la coleccion " + collection_name
@@ -208,9 +206,9 @@ if __name__ == "__main__":
                 except Exception as error:
                     em = str(error)
                     if "already exists" in em.lower():
-                        exists = "Collection <"+ collection_name + "> already exists."
+                        exists = "Collection <" + collection_name + "> already exists."
                         list_col = [collection for collection in db.list_collection_names()]
-                        mdb_msg = {"msg": exists, "db" : namedb,"list_collections": list_col}
+                        mdb_msg = {"msg": exists, "db": namedb, "list_collections": list_col}
                     else:
                         mdb_msg = error
                         client.close()
@@ -218,7 +216,7 @@ if __name__ == "__main__":
                 try:
                     cflag = False
                     c_list = db.list_collection_names()
-                    if collection_name.lower() is "xallx":
+                    if collection_name.lower() == "xallx":
                         cflag = True
                         naflag = False
                         mdb_list = []
@@ -254,16 +252,16 @@ if __name__ == "__main__":
                         client.close()
                 else:
                     try:
-## Accedo a la coleccion:
+                        # Accedo a la coleccion:
                         c = db[collection_name]
                         docs = []
                         for a in c.find():
                             aux = dumps(a)
                             aux_json = json.loads(aux)
                             docs.append(aux_json)
-                        #docs = [str(a) for a in c.find()]
+                        # docs = [str(a) for a in c.find()]
                         qdocs = c.count_documents({})
-                        mdb_msg = {"name_db": namedb,"name_collection": collection_name, "count_docs": qdocs, "list_docs": docs}
+                        mdb_msg = {"name_db": namedb, "name_collection": collection_name, "count_docs": qdocs, "list_docs": docs}
                     except Exception as error:
                         mdb_msg = error
                         client.close()
@@ -278,4 +276,3 @@ if __name__ == "__main__":
         module.exit_json(msg=flag, content=mdb_out)
     else:
         module.fail_json(msg=mdb_msg)
-

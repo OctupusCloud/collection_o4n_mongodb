@@ -8,29 +8,29 @@ DOCUMENTATION = """
 module: o4n_mongodb_search
 version_added: 1.0
 author: "Daiana Casas"
-short_description: Busca documentos en una collection y database determinada. 
+short_description: Busca documentos en una collection y database determinada.
 description:
     - Se conecta a MongoDB.
     - Busca un documento con la informacion que ingresa en la ipdevice.
 options:
     hostname:
-        description: 
+        description:
             - host del servidor
         requiered: True
     port:
         description:
             - port del servidor
-        requiered: True  
+        requiered: True
         type: int
     dbname:
         description:
             - database name
         requiered: False
-        default: 'test'    
+        default: 'test'
     collectionname:
-        description: 
+        description:
             - nombre de la collection. Debe existir en la db.
-        requiered: True            
+        requiered: True
     category:
         description:
             - nombre de la categoria de la informacion a guardar.
@@ -39,7 +39,7 @@ options:
     device:
         description:
             - informacion a guardar.
-        requiered: True            
+        requiered: True
 """
 
 EXAMPLES = """
@@ -63,7 +63,7 @@ EXAMPLES = """
 """
 
 RETURN = """
-msg: 
+msg:
     description: En todos los casos retorna un JSON.
     "msg": {
         "salida": {
@@ -79,16 +79,14 @@ msg:
                 "ip": "10.54.154.157",
                 "source": "...content..."
             }
-        }    
+        }
     }
 """
 
 from pymongo import MongoClient
-from bson.json_util import loads,dumps
+from bson.json_util import dumps
 from collections import OrderedDict
-from ansible.module_utils.basic import *
-from bson.objectid import ObjectId
-import urllib.parse
+from ansible.module_utils.basic import AnsibleModule
 import json
 
 
@@ -100,7 +98,7 @@ if __name__ == "__main__":
             port=dict(requiered=True, type='int'),
             dbname=dict(requiered=False, default="test"),
             user=dict(requiered=False),
-            password=dict(requiered=False,no_log=True),
+            password=dict(requiered=False, no_log=True),
             collectionname=dict(requiered=True),
             category=dict(requiered=False, default="base"),
             search=dict(requiered=True, type='dict'),
@@ -114,8 +112,8 @@ if __name__ == "__main__":
     collectionname = module.params.get("collectionname")
     category = module.params.get("category")
     search = module.params.get("search")
-    #search_param_parser = search_param.replace("'",'"')
-    #search = json.loads(search_param_parser)
+    # search_param_parser = search_param.replace("'",'"')
+    # search = json.loads(search_param_parser)
     sout = OrderedDict()
 
     access_client = False
@@ -123,23 +121,23 @@ if __name__ == "__main__":
 
     find = False
 
-## Conexion mongo db: se establece la conexion en la 1er operacion:
+# Conexion mongo db: se establece la conexion en la 1er operacion:
     try:
-        #client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
+        # client = MongoClient(host=hostname, port=port, connect=False, tz_aware=False)
         client = MongoClient(
-            host=hostname, 
-            port=port, 
+            host=hostname,
+            port=port,
             username=user,
-            password = password,
+            password=password,
             authSource=namedb,
-            connect=False, 
+            connect=False,
             tz_aware=False
         )
         access_client = True
     except Exception as error:
         mdb_msg = error
         module.fail_json(msg=error, content="Sin conexion a mongo DB")
-## Accedo al db y coleccion:
+# Accedo al db y coleccion:
     if access_client:
         try:
             db = client[namedb]
@@ -150,15 +148,15 @@ if __name__ == "__main__":
             client.close()
             module.fail_json(msg=error, find=False)
     if access_col:
-## ingreso a las keys:
-##      POR IP:
+        # ingreso a las keys:
+        # POR IP:
         try:
             sip = search["ip"]
             docObj = c.find_one({"ip": sip})
             fail = False
         except Exception as error:
             fail = True
-##      POR HOSTNAME:
+        # POR HOSTNAME:
         if fail:
             try:
                 shost = search["username"]
@@ -166,15 +164,15 @@ if __name__ == "__main__":
                 docstr = dumps(docObj)
                 if docObj:
                     doc = json.loads(docstr)
-                    module.exit_json(status=True,find=True, sout=doc)
+                    module.exit_json(status=True, find=True, sout=doc)
                 else:
-                    module.exit_json(status=True,find=False, sout=docObj)
+                    module.exit_json(status=True, find=False, sout=docObj)
             except Exception as error:
-                module.fail_json(msg="Key word error", content="El key word no existe en el doc de MongoDB", find=False)
+                module.fail_json(msg="Search error", content=error, find=False)
         else:
             if docObj:
                 docstr = dumps(docObj)
                 doc = json.loads(docstr)
-                module.exit_json(status=True,find=True, sout=doc)
+                module.exit_json(status=True, find=True, sout=doc)
             else:
-                module.exit_json(status=True,find=False, sout=docObj)
+                module.exit_json(status=True, find=False, sout=docObj)

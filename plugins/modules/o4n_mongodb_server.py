@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -13,19 +12,19 @@ short_description: Notifica el estado de la base de datos del servidor MongoDB
 description: Responde el estado de la base de datos del servidor conforme lo hace el statusServer del mismo.
 options:
     hostname:
-        description: 
+        description:
             - host del servidor
         requiered: True
     port:
         description:
             - puerto del servidor
-        requiered: True  
+        requiered: True
         type: int
     dbname:
         description:
             - nombre de la base de datos a acceder
         requiered: False
-        default: 'test'  
+        default: 'test'
 """
 
 EXAMPLES = """
@@ -38,7 +37,7 @@ EXAMPLES = """
 """
 
 RETURN = """
-msg: 
+msg:
     description: En todos los casos retorna un JSON. (ejemplo truncado)
     "msg": {
         "$clusterTime": {
@@ -64,10 +63,9 @@ msg:
 """
 
 from pymongo import MongoClient
-from bson.json_util import loads, dumps
-import urllib.parse
+from bson.json_util import dumps
 from collections import OrderedDict
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 from bson.codec_options import CodecOptions
 import json
 
@@ -80,8 +78,7 @@ if __name__ == "__main__":
             port=dict(requiered=True),
             dbname=dict(requiered=True),
             user=dict(requiered=False),
-            password=dict(requiered=False,no_log=True),
-
+            password=dict(requiered=False, no_log=True),
         )
     )
     hostname = module.params.get("hostname")
@@ -96,14 +93,14 @@ if __name__ == "__main__":
     access_db = False
 
     try:
-    ## Conexion mongo db: se establece la conexion en la 1er operacion:
+        # Conexion mongo db: se establece la conexion en la 1er operacion:
         client = MongoClient(
-            host=hostname, 
-            port=port, 
+            host=hostname,
+            port=port,
             username=user,
-            password = password,
+            password=password,
             authSource=dbname,
-            connect=False, 
+            connect=False,
             tz_aware=False)
         access_client = True
     except Exception as error:
