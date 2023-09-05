@@ -1,4 +1,4 @@
-# Ansible Collection - octupus.o4n_ros
+# Ansible Collection - octupus.o4n_mongodb
 
 Collection to automate tasks on MongoDB databases.
 
