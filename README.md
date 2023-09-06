@@ -13,4 +13,3 @@ Collection to automate tasks on MongoDB databases.
 ## Requirements
 
 - Ansible >= 2.10
-
